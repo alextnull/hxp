@@ -4,10 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Xml.Linq;
 
-namespace FirstFloor.Xcc
+namespace HandlebarsXamlPreprocessor
 {
     /// <summary>
     /// The MSBuild task for preprocessing conditional compilation symbols in XAML files.
@@ -20,49 +18,74 @@ namespace FirstFloor.Xcc
         /// </summary>
         [Required]
         public string DefinedSymbols { get; set; }
+
         /// <summary>
         /// The required ApplicationDefinitions parameter.
         /// </summary>
         [Required]
         public ITaskItem[] ApplicationDefinitions { get; set; }
+
         /// <summary>
         /// The required Pages parameter.
         /// </summary>
         [Required]
         public ITaskItem[] Pages { get; set; }
+
         /// <summary>
         /// The required EmbeddedXamlResources parameter.
         /// </summary>
         [Required]
         public ITaskItem[] EmbeddedXamlResources { get; set; }
+
+        /// <summary>
+        /// The required AvaloniaXamls parameter
+        /// </summary>
+        [Required]
+        public ITaskItem[] AvaloniaXamls { get; set; }
+
+        /// <summary>
+        /// The required AvaloniaXamlResources parameter
+        /// </summary>
+        [Required]
+        public ITaskItem[] AvaloniaXamlResources { get; set; }
+
         /// <summary>
         /// The required OutputPath parameter.
         /// </summary>
         [Required]
         public string OutputPath { get; set; }
-        /// <summary>
-        /// Determines whether ignorable content should be removed.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [remove ignorable content]; otherwise, <c>false</c>.
-        /// </value>
-        public bool RemoveIgnorableContent { get; set; }
+
 
         /// <summary>
         /// The output NewApplicationDefinitions parameter.
         /// </summary>
         [Output]
         public ITaskItem[] NewApplicationDefinitions { get; set; }
+
         /// <summary>
         /// The output NewPages parameter.
         /// </summary>
         [Output]
         public ITaskItem[] NewPages { get; set; }
+
         /// <summary>
         /// The output NewEmbeddedXamlResources parameter.
         /// </summary>
         [Output]
         public ITaskItem[] NewEmbeddedXamlResources { get; set; }
+
+        /// <summary>
+        /// The output NewAvaloniaXamls parameter.
+        /// </summary>
+        [Output]
+        public ITaskItem[] NewAvaloniaXamls { get; set; }
+
+        /// <summary>
+        /// The output NewAvaloniaXamlResources parameter.
+        /// </summary>
+        [Output]
+        public ITaskItem[] NewAvaloniaXamlResources { get; set; }
+
         /// <summary>
         /// The output GeneratedFiles parameter.
         /// </summary>
@@ -80,13 +103,15 @@ namespace FirstFloor.Xcc
             try {
                 Log.LogMessage(MessageImportance.Normal, "XCC > DefinedSymbols: {0}", string.Join(",", this.DefinedSymbols));
 
-                var preprocessor = new XamlPreprocessor(this.DefinedSymbols, this.RemoveIgnorableContent);
+                var preprocessor = new XamlPreprocessor(this.DefinedSymbols);
 
                 var generatedFiles = new List<ITaskItem>();
 
                 this.NewApplicationDefinitions = ProcessFiles(this.ApplicationDefinitions, generatedFiles, preprocessor).ToArray();
                 this.NewPages = ProcessFiles(this.Pages, generatedFiles, preprocessor).ToArray();
                 this.NewEmbeddedXamlResources = ProcessFiles(this.EmbeddedXamlResources, generatedFiles, preprocessor).ToArray();
+                this.NewAvaloniaXamls = ProcessFiles(this.AvaloniaXamls, generatedFiles, preprocessor).ToArray();
+                this.NewAvaloniaXamlResources = ProcessFiles(this.AvaloniaXamlResources, generatedFiles, preprocessor).ToArray();
 
                 this.GeneratedFiles = generatedFiles.ToArray();
 
@@ -108,7 +133,8 @@ namespace FirstFloor.Xcc
                     yield return newFile;
                 }
                 else {
-                    yield return file;      // return file as-is
+                    // return file as-is
+                    yield return file;
                 }
             }
         }
@@ -139,7 +165,8 @@ namespace FirstFloor.Xcc
                 // targetPath has been written, create linked item
                 result = new TaskItem(targetPath);
                 file.CopyMetadataTo(result);
-                result.SetMetadata("Link", targetRelativePath);          // this is the trick that makes it all work (replace page with a page link pointing to \obj\debug\preprocessedxaml\*)
+                // this is the trick that makes it all work (replace page with a page link pointing to \obj\debug\preprocessedxaml\*)
+                result.SetMetadata("Link", targetRelativePath);
             }
 
             var duration = (DateTime.Now - start).TotalMilliseconds;

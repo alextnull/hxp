@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<OutputType>Library</OutputType>
+		<Title>HandlebarsXamlPreprocessor.Test</Title>
+		<Product>HandlebarsXamlPreprocessor.Test</Product>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\HandlebarsXamlPreprocessor\HandlebarsXamlPreprocessor.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Xaml\*.xaml">
+			<Generator>MSBuild:Compile</Generator>
+			<SubType>Designer</SubType>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Xaml\*.axaml">
+			<Generator>MSBuild:Compile</Generator>
+			<SubType>Designer</SubType>
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MSTest" Version="3.8.3" />
+		<PackageReference Include="Microsoft.NET.Test.SDK" Version="17.13.0" />
+	</ItemGroup>
+</Project>

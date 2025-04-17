@@ -1,0 +1,69 @@
+﻿<!--
+***********************************************************************************************
+Xcc.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy. 
+
+Copyright (C) First Floor Software. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<UsingTask TaskName="PreprocessXaml" AssemblyFile="$(MSBuildThisFileDirectory)/../tasks/netstandard2.0/HandlebarsXamlPreprocessor.dll" />
+
+	<PropertyGroup>
+		<PreprocessedXamlDir>$(IntermediateOutputPath)PreprocessedXaml\</PreprocessedXamlDir>
+	</PropertyGroup>
+
+	<Target Name="GenerateXaml" BeforeTargets="XamlMarkupCompilePass1;MarkupCompilePass1;PreBuildEvent;GenerateAvaloniaResources" AfterTargets="_PreXamlG">
+		<!-- create collection for embedded xaml, axaml resources -->
+		<CreateItem Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' Or '%(Extension)' == '.axaml'">
+			<Output TaskParameter="Include" ItemName="EmbeddedXamlResource"/>
+		</CreateItem>
+
+		<!-- create collection for Avalonia xaml, axaml resources-->
+		<CreateItem Include="@(AvaloniaResource)" Condition="'%(Extension)' == '.xaml' Or '%(Extension)' == '.axaml'">
+			<Output TaskParameter="Include" ItemName="AvaloniaXamlResource"/>
+		</CreateItem>
+
+		<PropertyGroup Label="Globals">
+			<!-- support for .NET projects (used by default) -->
+			<PreprocessorDefinitions>$(DefineConstants)</PreprocessorDefinitions>
+		</PropertyGroup>
+
+		<!-- preprocess xaml pages -->
+		<PreprocessXaml ApplicationDefinitions="@(ApplicationDefinition)"
+						Pages="@(Page)"
+						EmbeddedXamlResources="@(EmbeddedXamlResource)"
+						AvaloniaXamls="@(AvaloniaXaml)"
+						AvaloniaXamlResources="@(AvaloniaXamlResource)"
+						DefinedSymbols="$(PreprocessorDefinitions)"
+						OutputPath="$(PreprocessedXamlDir)">
+			<Output ItemName="NewApplicationDefinition" TaskParameter="NewApplicationDefinitions" />
+			<Output ItemName="NewPage" TaskParameter="NewPages" />
+			<Output ItemName="NewEmbeddedXamlResource" TaskParameter="NewEmbeddedXamlResources" />
+			<Output ItemName="NewAvaloniaXaml" TaskParameter="NewAvaloniaXamls" />
+			<Output ItemName="NewAvaloniaXamlResource" TaskParameter="NewAvaloniaXamlResources" />
+			<Output ItemName="FileWrites" TaskParameter="GeneratedFiles" />
+		</PreprocessXaml>
+		<ItemGroup>
+			<ApplicationDefinition Remove="@(ApplicationDefinition)" />
+			<Page Remove="@(Page)" />
+			<EmbeddedResource Remove="@(EmbeddedXamlResource)" />
+			<AvaloniaXaml Remove="@(AvaloniaXaml)" />
+			<AvaloniaResource Remove="@(AvaloniaResource)" />
+
+			<ApplicationDefinition Include="@(NewApplicationDefinition)" />
+			<Page Include="@(NewPage)" />
+			<EmbeddedResource Include="@(NewEmbeddedXamlResource)" />
+			<AvaloniaXaml Include="@(NewAvaloniaXaml)" />
+			<AvaloniaResource Include="@(NewAvaloniaXamlResource)" />
+		</ItemGroup>
+	</Target>
+
+	<!-- Clean up preprocessed files -->
+	<Target Name="CleanPreprocessedXaml" AfterTargets="Clean">
+		<RemoveDir Directories="$(PreprocessedXamlDir)" />
+	</Target>
+</Project>
