@@ -1,0 +1,20 @@
+﻿<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AvaloniaApplication1.App"
+             RequestedThemeVariant="Default">
+	<Application.Styles>
+		<FluentTheme />
+
+		<!--{{#if DEBUG_FEATURE}}-->
+		<Style Selector="Button">
+			<Setter Property="Background" Value="Red" />
+		</Style>
+		<!--{{/if}}-->
+
+		<!--{{#if RELEASE_FEATURE}}-->
+		<Style Selector="Button">
+			<Setter Property="Background" Value="Green" />
+		</Style>
+		<!--{{/if}}-->
+	</Application.Styles>
+</Application>
